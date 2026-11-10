@@ -2,7 +2,7 @@
  * FrontGuard programmatic API.
  *
  * @example
- * import { scan, toSarif } from 'frontguard';
+ * import { scan, toSarif } from '@juliocarneiro/frontguard';
  * const result = await scan({ cwd: 'apps/web', config: { failOn: 'medium' } });
  * await writeFile('frontguard.sarif', toSarif(result));
  */

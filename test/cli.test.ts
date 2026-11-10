@@ -73,7 +73,11 @@ describe('cli', () => {
     t.io.init = { stdout: t.io.stdout, stderr: t.io.stderr, confirm: vi.fn(), exec };
 
     expect(await run(['init'], t.io)).toBe(EXIT.ok);
-    expect(exec).toHaveBeenCalledWith('pnpm', ['add', '--save-dev', 'frontguard'], root);
+    expect(exec).toHaveBeenCalledWith(
+      'pnpm',
+      ['add', '--save-dev', '@juliocarneiro/frontguard'],
+      root,
+    );
 
     const pkg = readFileSync(join(root, 'package.json'), 'utf8');
     expect(JSON.parse(pkg).scripts).toEqual({ build: 'vite build', security: 'frontguard' });
@@ -102,7 +106,7 @@ describe('cli', () => {
     expect(await run(['init', '--no-ci'], t.io)).toBe(EXIT.ok);
     expect(exec).not.toHaveBeenCalled();
     expect(existsSync(join(root, '.frontguardrc.json'))).toBe(true);
-    expect(t.stdout()).toContain('npx frontguard');
+    expect(t.stdout()).toContain('npx @juliocarneiro/frontguard');
   });
 
   it('init asks before each step when interactive', async () => {

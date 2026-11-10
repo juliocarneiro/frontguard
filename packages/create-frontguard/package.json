@@ -1,7 +1,7 @@
 {
-  "name": "create-frontguard",
+  "name": "@juliocarneiro/create-frontguard",
   "version": "0.1.0",
-  "description": "Set up FrontGuard in your project: npm create frontguard",
+  "description": "Set up FrontGuard in your project: npm create @juliocarneiro/frontguard",
   "keywords": [
     "frontguard",
     "security",
@@ -27,7 +27,7 @@
     "index.js"
   ],
   "dependencies": {
-    "frontguard": "workspace:^"
+    "@juliocarneiro/frontguard": "workspace:^"
   },
   "engines": {
     "node": "^22.18.0 || >=24.11.0"

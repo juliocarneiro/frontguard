@@ -1,6 +1,6 @@
 import type { PackageManager } from './init.ts';
 
-const TS_TEMPLATE = `import { defineConfig } from 'frontguard';
+const TS_TEMPLATE = `import { defineConfig } from '@juliocarneiro/frontguard';
 
 export default defineConfig({
   // Lowest severity that makes \`frontguard\` exit with code 1: critical | high | medium | low | info | none
@@ -79,7 +79,7 @@ export function workflowTemplate(pm: PackageManager, installed: boolean): string
     : `      - uses: actions/setup-node@v5
         with:
           node-version: 22`;
-  const command = installed ? EXEC[pm] : 'npx --yes frontguard@latest';
+  const command = installed ? EXEC[pm] : 'npx --yes @juliocarneiro/frontguard@latest';
   return `name: FrontGuard
 
 on:

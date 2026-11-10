@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
+import { PACKAGE_NAME } from '../version.ts';
 import { configTemplate, workflowTemplate } from './templates.ts';
 
 export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
@@ -55,13 +56,13 @@ function detectPackageManager(cwd: string, userAgent = process.env.npm_config_us
 function installCommand(pm: PackageManager): [string, string[]] {
   switch (pm) {
     case 'npm':
-      return ['npm', ['install', '--save-dev', 'frontguard']];
+      return ['npm', ['install', '--save-dev', PACKAGE_NAME]];
     case 'pnpm':
-      return ['pnpm', ['add', '--save-dev', 'frontguard']];
+      return ['pnpm', ['add', '--save-dev', PACKAGE_NAME]];
     case 'yarn':
-      return ['yarn', ['add', '--dev', 'frontguard']];
+      return ['yarn', ['add', '--dev', PACKAGE_NAME]];
     case 'bun':
-      return ['bun', ['add', '--dev', 'frontguard']];
+      return ['bun', ['add', '--dev', PACKAGE_NAME]];
   }
 }
 
@@ -124,7 +125,10 @@ export async function runInit(options: InitOptions, io: InitIO): Promise<number>
     if (pkg.scripts?.[scriptName]) {
       io.stdout(`package.json already has a "${scriptName}" script, keeping it.`);
     } else if (await ask(`Add a "${scriptName}" script to package.json?`, true)) {
-      pkg.scripts = { ...pkg.scripts, [scriptName]: installed ? 'frontguard' : 'npx frontguard' };
+      pkg.scripts = {
+        ...pkg.scripts,
+        [scriptName]: installed ? 'frontguard' : `npx ${PACKAGE_NAME}`,
+      };
       await writeFile(pkgPath, `${JSON.stringify(pkg, null, detectIndent(raw))}\n`, 'utf8');
       done.push(`added the "${scriptName}" script`);
     }
@@ -156,7 +160,7 @@ export async function runInit(options: InitOptions, io: InitIO): Promise<number>
 
   io.stdout('');
   for (const item of done) io.stdout(`✔ ${item}`);
-  const run = hasPackageJson && options.script ? runCommand(pm, scriptName) : 'npx frontguard';
+  const run = hasPackageJson && options.script ? runCommand(pm, scriptName) : `npx ${PACKAGE_NAME}`;
   io.stdout(`\nNext: run \`${run}\` to scan your project.`);
   return 0;
 }
