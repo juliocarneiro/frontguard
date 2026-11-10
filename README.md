@@ -14,7 +14,7 @@ dependencies in React, Vue, Svelte, Angular, Astro and plain JavaScript/TypeScri
 [![SARIF](https://img.shields.io/badge/SARIF-2.1.0-6e40c9)](#sarif)
 
 ```sh
-npx frontguard
+npx @juliocarneiro/frontguard
 ```
 
 </div>
@@ -95,47 +95,51 @@ It is fast (one parse per file, all rules in one traversal), has two runtime con
 
 Requires **Node.js 22.18 or later** (or 24.11+).
 
-| Use case                  | Command                                                                       |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| Try it, nothing installed | `npx frontguard`                                                              |
-| Set up a project (guided) | `npm create frontguard`                                                       |
-| Add to a project manually | `npm install --save-dev frontguard`                                           |
-| pnpm / yarn / bun         | `pnpm add -D frontguard` · `yarn add -D frontguard` · `bun add -d frontguard` |
-| Global install            | `npm install --global frontguard`                                             |
+| Use case                  | Command                                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Try it, nothing installed | `npx @juliocarneiro/frontguard`                                                                                            |
+| Set up a project (guided) | `npm create @juliocarneiro/frontguard`                                                                                     |
+| Add to a project manually | `npm install --save-dev @juliocarneiro/frontguard`                                                                         |
+| pnpm / yarn / bun         | `pnpm add -D @juliocarneiro/frontguard` · `yarn add -D @juliocarneiro/frontguard` · `bun add -d @juliocarneiro/frontguard` |
+| Global install            | `npm install --global @juliocarneiro/frontguard`                                                                           |
+
+> The package is published under a scope, `@juliocarneiro/frontguard`, because npm reserves
+> names too similar to existing packages. Once installed, the command is simply `frontguard`
+> (`npx frontguard`, `"security": "frontguard"`, `pnpm exec frontguard`).
 
 ### Guided setup
 
-`npm create frontguard` (also `pnpm create frontguard`, `yarn create frontguard`,
-`bun create frontguard`) runs `frontguard init` in the current directory:
+`npm create @juliocarneiro/frontguard` (also `pnpm create @juliocarneiro/frontguard`, `yarn create @juliocarneiro/frontguard`,
+`bun create @juliocarneiro/frontguard`) runs `frontguard init` in the current directory:
 
 1. detects your package manager (lockfile, `packageManager` field, then the invoking tool);
-2. installs `frontguard` as a devDependency;
+2. installs `@juliocarneiro/frontguard` as a devDependency;
 3. writes `frontguard.config.ts` (or `.frontguardrc.json` when the package is not installed locally);
 4. adds `"security": "frontguard"` to your `package.json` scripts, keeping your indentation;
 5. writes `.github/workflows/frontguard.yml`, which uploads results to the repository's **Security** tab;
 6. adds `frontguard-report/` to `.gitignore`.
 
 Every step asks first, defaults are sensible, and steps that are already done are skipped, so it is
-safe to run again. Non-interactive: `npm create frontguard -- --yes`. All flags are listed in the
+safe to run again. Non-interactive: `npm create @juliocarneiro/frontguard -- --yes`. All flags are listed in the
 [CLI reference](#frontguard-init).
 
 ## Quick start
 
 ```sh
 # scan the current directory
-npx frontguard
+npx @juliocarneiro/frontguard
 
 # scan another directory
-npx frontguard apps/web
+npx @juliocarneiro/frontguard apps/web
 
 # only XSS and secrets, fail on medium or worse
-npx frontguard --categories xss,secrets --fail-on medium
+npx @juliocarneiro/frontguard --categories xss,secrets --fail-on medium
 
 # write an HTML dashboard and open it
-npx frontguard --open
+npx @juliocarneiro/frontguard --open
 
 # CI: SARIF for GitHub code scanning, no network
-npx frontguard --reporter console,sarif --offline
+npx @juliocarneiro/frontguard --reporter console,sarif --offline
 ```
 
 The process exits with `1` when at least one finding is at or above `--fail-on` (default `high`),
@@ -285,7 +289,7 @@ invalid values stop the scan with a precise message instead of being silently ig
 
 ```ts
 // frontguard.config.ts
-import { defineConfig } from 'frontguard';
+import { defineConfig } from '@juliocarneiro/frontguard';
 
 export default defineConfig({
   failOn: 'high',
@@ -400,8 +404,8 @@ export default defineConfig({
 Scan each app from its own directory so its lockfile and config are used:
 
 ```sh
-npx frontguard apps/web
-npx frontguard apps/admin
+npx @juliocarneiro/frontguard apps/web
+npx @juliocarneiro/frontguard apps/admin
 ```
 
 Or scan the root with excludes for apps you do not ship. The dependency audit reads the lockfile at
@@ -589,7 +593,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Scan
-        run: npx frontguard --reporter console,sarif
+        run: npx @juliocarneiro/frontguard --reporter console,sarif
       - name: Upload results to GitHub code scanning
         if: ${{ !cancelled() }}
         uses: github/codeql-action/upload-sarif@v4
@@ -608,7 +612,7 @@ repositories need GitHub Advanced Security / Code Security.
 frontguard:
   image: node:22
   script:
-    - npx --yes frontguard --reporter console,json,html
+    - npx --yes @juliocarneiro/frontguard --reporter console,json,html
   artifacts:
     when: always
     paths:
@@ -617,7 +621,7 @@ frontguard:
 
 ### Any other CI
 
-Run `npx frontguard` and rely on the exit code, then archive `frontguard-report/` if you enable the
+Run `npx @juliocarneiro/frontguard` and rely on the exit code, then archive `frontguard-report/` if you enable the
 JSON or HTML reporters. Use `--offline` on runners without internet access.
 
 ### Git hooks
@@ -627,12 +631,12 @@ JSON or HTML reporters. Use `--offline` on runners without internet access.
 pre-push:
   commands:
     frontguard:
-      run: npx frontguard --offline --quiet
+      run: npx @juliocarneiro/frontguard --offline --quiet
 ```
 
 ```sh
 # .husky/pre-push
-npx frontguard --offline --quiet
+npx @juliocarneiro/frontguard --offline --quiet
 ```
 
 `pre-push` is a better fit than `pre-commit`: FrontGuard scans the directory, not only staged files.
@@ -640,7 +644,15 @@ npx frontguard --offline --quiet
 ## Programmatic API
 
 ```ts
-import { scan, toSarif, toJson, toHtml, toConsole, writeReports, meetsThreshold } from 'frontguard';
+import {
+  scan,
+  toSarif,
+  toJson,
+  toHtml,
+  toConsole,
+  writeReports,
+  meetsThreshold,
+} from '@juliocarneiro/frontguard';
 
 const result = await scan({
   cwd: 'apps/web', // directory to scan, default process.cwd()
@@ -689,7 +701,7 @@ both. Visitors from every rule are merged and run in a single traversal.
 
 ```ts
 // security/no-alert.ts
-import { defineRule } from 'frontguard';
+import { defineRule } from '@juliocarneiro/frontguard';
 
 export const noAlert = defineRule({
   meta: {
@@ -716,7 +728,7 @@ export const noAlert = defineRule({
 
 ```ts
 // frontguard.config.ts
-import { defineConfig } from 'frontguard';
+import { defineConfig } from '@juliocarneiro/frontguard';
 import { noAlert } from './security/no-alert.ts';
 
 export default defineConfig({ customRules: [noAlert] });

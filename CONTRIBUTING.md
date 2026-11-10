@@ -26,7 +26,7 @@ src/
   dependencies/   lockfile parsers, OSV client, CVSS
   reporters/      console, json, sarif, html (pure functions returning strings)
 packages/
-  create-frontguard/   `npm create frontguard`
+  create-frontguard/   `npm create @juliocarneiro/frontguard`
 test/             vitest suites and fixtures
 ```
 
@@ -48,8 +48,8 @@ Every user-facing change needs a changeset:
 pnpm changeset
 ```
 
-Merging to `main` opens a "Version Packages" PR; merging that PR publishes `frontguard` and
-`create-frontguard` to npm with provenance.
+Merging to `main` opens a "Version Packages" PR; merging that PR publishes `@juliocarneiro/frontguard` and
+`@juliocarneiro/create-frontguard` to npm with provenance.
 
 First release only: add an npm automation token as the `NPM_TOKEN` repository secret. Once both
 packages exist on npm, enable trusted publishing for them (workflow `release.yml`) and remove the

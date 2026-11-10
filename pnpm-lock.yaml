@@ -81,7 +81,7 @@ importers:
 
   packages/create-frontguard:
     dependencies:
-      frontguard:
+      '@juliocarneiro/frontguard':
         specifier: workspace:^
         version: link:../..
 
