@@ -51,9 +51,10 @@ pnpm changeset
 Merging to `main` opens a "Version Packages" PR; merging that PR publishes `@juliocarneiro/frontguard` and
 `@juliocarneiro/create-frontguard` to npm with provenance.
 
-First release only: add an npm automation token as the `NPM_TOKEN` repository secret. Once both
-packages exist on npm, enable trusted publishing for them (workflow `release.yml`) and remove the
-secret.
+Publishing uses npm trusted publishing (OIDC, with automatic provenance). Each package has a
+trusted publisher on npmjs.com pointing at this repository and `release.yml`; no npm token is
+stored. The workflow can also be started by hand from the Actions tab (`workflow_dispatch`), for
+example to retry a failed publish.
 
 ## Commit style
 
