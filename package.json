@@ -57,7 +57,7 @@
     "check:unused": "knip",
     "docs:rules": "node scripts/generate-rules-doc.ts",
     "changeset": "changeset",
-    "release": "pnpm build && changeset publish",
+    "release": "pnpm build && node scripts/publish.ts",
     "prepack": "pnpm build"
   },
   "dependencies": {

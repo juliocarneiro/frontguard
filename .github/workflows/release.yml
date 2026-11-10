@@ -3,10 +3,10 @@ name: Release
 # Changesets opens a "chore: release" PR from pending changesets; merging it publishes to npm,
 # then pushes the git tags and creates the GitHub releases.
 #
-# Publishing uses npm trusted publishing (OIDC + automatic provenance): configure it once per
-# package on npmjs.com (Settings -> Trusted publishing -> GitHub Actions, repository
-# juliocarneiro/frontguard, workflow release.yml). The NPM_TOKEN secret is only a fallback for
-# packages without a trusted publisher; once both are configured, delete it.
+# Publishing uses npm trusted publishing (OIDC + automatic provenance), configured per package
+# on npmjs.com (Settings -> Trusted publishing -> GitHub Actions, repository
+# juliocarneiro/frontguard, workflow release.yml). No npm token is needed: scripts/publish.ts
+# publishes with the npm CLI, because pnpm publish does not do the OIDC exchange.
 
 on:
   push:
@@ -31,6 +31,8 @@ jobs:
           node-version: 24
           cache: pnpm
           registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm >= 11.5.1.
+      - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck && pnpm test
       # v2 is the release line compatible with @changesets/cli 3 (v1 cannot parse its output,
@@ -41,7 +43,3 @@ jobs:
           pr-title: 'chore: release'
           commit-message: 'chore: release'
           create-github-releases: true
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
