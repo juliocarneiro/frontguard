@@ -1,6 +1,6 @@
 {
   "name": "create-frontguard",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Set up FrontGuard in your project: npm create frontguard",
   "keywords": [
     "frontguard",
