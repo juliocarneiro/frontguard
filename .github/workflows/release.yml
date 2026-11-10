@@ -1,8 +1,10 @@
 name: Release
 
 # Changesets opens a "Version Packages" PR from pending changesets; merging it publishes to npm.
-# Publishing uses npm trusted publishing (OIDC), so no long-lived token is stored. Configure it once
-# per package on npmjs.com (Settings -> Trusted publishing -> GitHub Actions, workflow: release.yml).
+# Publishing uses npm trusted publishing (OIDC). npm only allows configuring it on packages that
+# already exist, so the first release uses the NPM_TOKEN repository secret (an npm automation
+# token). After that, enable trusted publishing for both packages on npmjs.com (Settings ->
+# Trusted publishing -> GitHub Actions, workflow: release.yml) and delete the secret.
 
 on:
   push:
@@ -35,4 +37,5 @@ jobs:
           commit: 'chore: release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'

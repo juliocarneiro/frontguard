@@ -48,7 +48,12 @@ Every user-facing change needs a changeset:
 pnpm changeset
 ```
 
-Merging to `main` opens a "Version Packages" PR; merging that PR publishes to npm with provenance.
+Merging to `main` opens a "Version Packages" PR; merging that PR publishes `frontguard` and
+`create-frontguard` to npm with provenance.
+
+First release only: add an npm automation token as the `NPM_TOKEN` repository secret. Once both
+packages exist on npm, enable trusted publishing for them (workflow `release.yml`) and remove the
+secret.
 
 ## Commit style
 

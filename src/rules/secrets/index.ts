@@ -89,6 +89,20 @@ function isGeneric(pattern: SecretPattern): boolean {
   return pattern.id.startsWith('generic-');
 }
 
+const MAX_PEM_LINES = 100;
+
+/** Key material lines after a `-----BEGIN ... KEY-----` header, up to the END line. */
+function pemBody(lines: readonly string[], headerIndex: number): string[] {
+  const body: string[] = [];
+  for (let i = headerIndex + 1; i < lines.length && i <= headerIndex + MAX_PEM_LINES; i++) {
+    const text = lines[i]!.trim();
+    if (text.startsWith('-----END')) break;
+    const material = /[A-Za-z0-9+/=]{8,}/.exec(text)?.[0];
+    if (material) body.push(material);
+  }
+  return body;
+}
+
 function createPatternRule(meta: RuleMeta, patterns: SecretPattern[]): Rule {
   return defineRule({
     meta,
@@ -102,19 +116,26 @@ function createPatternRule(meta: RuleMeta, patterns: SecretPattern[]): Rule {
           const match = pattern.regex.exec(line);
           if (!match) continue;
 
+          // A capture group holds the secret itself, without surrounding delimiters.
           let secret = match[1] ?? match[0];
+          let column = match.index + (match[1] ? match[0].indexOf(match[1]) : 0) + 1;
           if (generic) {
             const value = extractAssignedValue(line, match.index);
             if (!value || !looksLikeRealSecret(value)) continue;
             secret = value;
+            column = match.index + 1;
           }
+
+          const redact = [secret.trim()];
+          // PEM blocks: the key material is on the following lines, mask all of it.
+          if (meta.id === 'FG-SEC-003') redact.push(...pemBody(context.lines, index));
 
           context.report({
             line: index + 1,
-            column: match.index + 1,
+            column,
             message: pattern.name,
             severity: pattern.severity,
-            redact: secret.trim(),
+            redact,
           });
         }
       }
