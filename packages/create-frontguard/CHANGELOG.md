@@ -1,5 +1,12 @@
 # create-frontguard
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`43f04d4`](https://github.com/juliocarneiro/frontguard/commit/43f04d4f698366957b683364fc003e1622c29cd7), [`eb6bcb5`](https://github.com/juliocarneiro/frontguard/commit/eb6bcb59bcc4c3bf06a4f7223a70974aac44bc43)]:
+  - @juliocarneiro/frontguard@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes

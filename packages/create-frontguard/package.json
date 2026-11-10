@@ -1,6 +1,6 @@
 {
   "name": "@juliocarneiro/create-frontguard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Set up FrontGuard in your project: npm create @juliocarneiro/frontguard",
   "keywords": [
     "frontguard",

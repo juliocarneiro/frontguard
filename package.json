@@ -1,6 +1,6 @@
 {
   "name": "@juliocarneiro/frontguard",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Static security scanner for frontend code: XSS sinks, leaked secrets, insecure auth patterns, misconfigurations and vulnerable dependencies.",
   "keywords": [
     "security",
