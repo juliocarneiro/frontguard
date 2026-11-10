@@ -7,7 +7,7 @@
 Finds XSS sinks, leaked secrets, insecure auth patterns, misconfigurations and vulnerable
 dependencies in React, Vue, Svelte, Angular, Astro and plain JavaScript/TypeScript projects.
 
-[![npm](https://img.shields.io/npm/v/@juliocarneiro/frontguard?color=cb3837&logo=npm)](https://www.npmjs.com/package/@juliocarneiro/frontguard)
+[![npm](https://img.shields.io/npm/v/@juliocarneiro/frontguard?color=1f6feb&logo=npm)](https://www.npmjs.com/package/@juliocarneiro/frontguard)
 [![CI](https://github.com/juliocarneiro/frontguard/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/juliocarneiro/frontguard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/github/license/juliocarneiro/frontguard)](./LICENSE)
 [![Node](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fjuliocarneiro%2Ffrontguard%2Fmain%2Fpackage.json&query=%24.engines.node&label=node&color=339933)](https://nodejs.org)
