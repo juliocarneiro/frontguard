@@ -104,9 +104,15 @@ Requires **Node.js 22.18 or later** (or 24.11+).
 | pnpm / yarn / bun         | `pnpm add -D @juliocarneiro/frontguard` · `yarn add -D @juliocarneiro/frontguard` · `bun add -d @juliocarneiro/frontguard` |
 | Global install            | `npm install --global @juliocarneiro/frontguard`                                                                           |
 
-> The package is published under a scope, `@juliocarneiro/frontguard`, because npm reserves
-> names too similar to existing packages. Once installed, the command is simply `frontguard`
-> (`npx frontguard`, `"security": "frontguard"`, `pnpm exec frontguard`).
+> [!IMPORTANT]
+> The npm package is **`@juliocarneiro/frontguard`** (scoped, because npm reserves names too
+> similar to existing packages). There is no unscoped `frontguard` package, so
+> `npx frontguard` **does not work** unless FrontGuard is already installed in the project.
+> Without installing, always use the full name: `npx @juliocarneiro/frontguard`.
+>
+> `frontguard` is the name of the **binary**. It is available after installing the package:
+> in `package.json` scripts (`"security": "frontguard"`), with `pnpm exec frontguard`, or
+> directly in the terminal after a global install.
 
 ### Guided setup
 
@@ -184,7 +190,7 @@ severity, a CWE mapping and a concrete fix. Full descriptions: [docs/rules.md](.
 | **Dependencies**     |                                 |               |                                                                                                                                                     |
 | FG-DEP-001           | `no-vulnerable-dependencies`    | from advisory | Installed versions with a published advisory on OSV.dev                                                                                             |
 
-List them from the terminal with `frontguard rules` (or `frontguard rules --json`).
+List them from the terminal with `npx @juliocarneiro/frontguard rules` (add `--json` for full metadata).
 
 ### Framework support
 
@@ -205,9 +211,14 @@ breaks, so a finding at line 42 of a `.vue` file is at line 42 of that file.
 
 ## CLI reference
 
-```text
-frontguard [command] [options]
+```sh
+npx @juliocarneiro/frontguard [command] [options]   # without installing
+frontguard [command] [options]                      # once installed (npm scripts, pnpm exec, global)
 ```
+
+The commands below are written as `frontguard …` for brevity. If FrontGuard is not installed,
+replace `frontguard` with `npx @juliocarneiro/frontguard`, for example
+`npx @juliocarneiro/frontguard rules`.
 
 `scan` is the default command, so `frontguard` and `frontguard scan` are equivalent.
 
