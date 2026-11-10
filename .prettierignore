@@ -1,0 +1,6 @@
+dist
+coverage
+pnpm-lock.yaml
+test/fixtures
+CHANGELOG.md
+docs/rules.md

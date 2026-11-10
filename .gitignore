@@ -27,3 +27,5 @@ Thumbs.db
 
 *.sqlite
 *.sqlite3
+
+.pnpm-store/

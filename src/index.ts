@@ -1,29 +1,34 @@
-export { ScanEngine } from './core/engine.js';
-export { defineConfig, loadConfig, getDefaultConfig } from './core/config.js';
-export { ruleRegistry } from './core/rule-registry.js';
-export { discoverFiles, readFileContent } from './core/file-discovery.js';
-export { meetsThreshold, compareSeverity, severityToNumber } from './core/severity.js';
-
-export { BaseScanner } from './scanners/base-scanner.js';
-export { XSSScanner } from './scanners/xss/index.js';
-export { SecretsScanner } from './scanners/secrets/index.js';
-export { DependencyScanner } from './scanners/dependencies/index.js';
-export { AuthPatternsScanner } from './scanners/auth-patterns/index.js';
-export { MisconfigScanner } from './scanners/misconfig/index.js';
-
-export { ConsoleReporter } from './reporters/console-reporter.js';
-export { JsonReporter } from './reporters/json-reporter.js';
-export { HtmlReporter } from './reporters/html-reporter.js';
-export { SarifReporter } from './reporters/sarif-reporter.js';
-
+/**
+ * FrontGuard programmatic API.
+ *
+ * @example
+ * import { scan, toSarif } from 'frontguard';
+ * const result = await scan({ cwd: 'apps/web', config: { failOn: 'medium' } });
+ * await writeFile('frontguard.sarif', toSarif(result));
+ */
+export { scan, type ScanOptions } from './core/scan.ts';
+export { defineConfig, loadConfig, type LoadedConfig } from './config/load.ts';
+export {
+  resolveConfig,
+  ConfigError,
+  type UserConfig,
+  type ResolvedConfig,
+} from './config/schema.ts';
+export { defineRule } from './core/rule.ts';
+export { builtinRules } from './rules/index.ts';
+export { DEPENDENCY_RULE } from './dependencies/audit.ts';
+export { meetsThreshold } from './core/severity.ts';
+export { toConsole, toHtml, toJson, toSarif, writeReports } from './reporters/index.ts';
+export { VERSION } from './version.ts';
 export type {
+  Category,
   Finding,
-  ScanResult,
-  FrontGuardConfig,
-  RuleDefinition,
-  Severity,
+  Location,
+  ReportDescriptor,
+  Rule,
+  RuleContext,
   RuleLevel,
-  ScannerCategory,
-  FileContent,
-  Reporter,
-} from './core/types.js';
+  RuleMeta,
+  ScanResult,
+  Severity,
+} from './types.ts';

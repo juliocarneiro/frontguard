@@ -1,0 +1,7 @@
+# FrontGuard is a secret scanner: its fixtures and detection patterns contain fake,
+# intentionally secret-looking values. None of them are real credentials.
+version: 2
+secret:
+  ignored_paths:
+    - 'test/fixtures/**'
+    - 'src/rules/secrets/patterns.ts'
