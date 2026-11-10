@@ -8,6 +8,7 @@ import {
   looksLikeRealSecret,
 } from './heuristics.ts';
 import { secretPatterns, type SecretPattern } from './patterns.ts';
+import { noSecretInPublicEnv } from './public-env.ts';
 
 const base = {
   category: 'secrets',
@@ -172,4 +173,5 @@ export const secretsRules: Rule[] = [
     ),
   ),
   highEntropyRule,
+  noSecretInPublicEnv,
 ];
