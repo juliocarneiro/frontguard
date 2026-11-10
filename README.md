@@ -1,278 +1,219 @@
-<p align="center">
-  <h1 align="center">FrontGuard</h1>
-  <p align="center"><strong>Open-source frontend security scanner that catches vulnerabilities before they ship.</strong></p>
-</p>
+# FrontGuard
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/frontguard"><img src="https://img.shields.io/npm/v/frontguard.svg" alt="npm version"></a>
-  <a href="https://github.com/frontguard/frontguard/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license"></a>
-  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg" alt="node >= 18">
-  <img src="https://img.shields.io/badge/TypeScript-5.7-blue.svg" alt="TypeScript">
-</p>
+[![npm](https://img.shields.io/npm/v/frontguard.svg)](https://www.npmjs.com/package/frontguard)
+[![CI](https://github.com/juliocarneiro/frontguard/actions/workflows/ci.yml/badge.svg)](https://github.com/juliocarneiro/frontguard/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/frontguard.svg)](./LICENSE)
+[![node](https://img.shields.io/node/v/frontguard.svg)](https://nodejs.org)
 
----
+**Static security scanner for frontend code.** FrontGuard finds XSS sinks, leaked secrets, insecure
+auth patterns, misconfigurations and vulnerable dependencies in React, Vue, Svelte, Angular and plain
+JS/TS projects, and reports them in your terminal, as JSON, as an HTML dashboard or as SARIF for
+GitHub code scanning.
 
-FrontGuard is a static analysis security tool purpose-built for frontend codebases. It scans TypeScript, JavaScript, React, Vue, Angular, and Svelte projects for XSS vulnerabilities, leaked secrets, insecure auth patterns, misconfigurations, and vulnerable dependencies — all from a single CLI command.
-
-## Features
-
-- **XSS Detection** — 8 rules covering innerHTML, eval, document.write, dangerouslySetInnerHTML, v-html, Angular bypasses, and more
-- **Secrets Scanner** — 149+ patterns for AWS, Google, GitHub, Stripe, Slack, OpenAI, database URIs, private keys, JWTs, and dozens more providers
-- **Auth Pattern Analysis** — Flags localStorage token storage, tokens in URLs, and hardcoded credentials
-- **Misconfiguration Detection** — Catches exposed sourcemaps, mixed content, and CDN resources without integrity checks
-- **Dependency Auditing** — Queries OSV.dev for known vulnerabilities in your dependencies
-- **AI-Powered Analysis** — Optional deep scan, auto-fix suggestions, and cross-file data flow analysis via OpenAI, Anthropic, Google, or Ollama
-- **Live Vulnerability Feed** — Real-time feeds from OSV.dev, GitHub Advisory DB, and NVD with local JSON caching
-- **Multiple Reporters** — Console, JSON, interactive HTML dashboard, and SARIF for CI/CD integration
-- **CI/CD Ready** — SARIF output for GitHub Code Scanning, with built-in severity thresholds for fail gates
-
-## Quick Start
-
-```bash
-# Install globally
-npm install -g frontguard
-
-# Initialize config (optional)
-frontguard init
-
-# Scan your project
-frontguard scan ./src
-
-# Scan with HTML report (auto-opens in browser)
-frontguard scan ./src -r
+```sh
+npx frontguard
 ```
 
-## Example Output
+No install, no account, no code leaves your machine. The only network call is the optional
+dependency lookup on [OSV.dev](https://osv.dev), which sends package names and versions only.
 
-```
-  ┌────────────────────────────────────────────────────────┐
-  │                                                        │
-  │    FrontGuard  Security Scanner                        │
-  │    Catch vulnerabilities before they ship              │
-  │                                                        │
-  └────────────────────────────────────────────────────────┘
+## Contents
 
-  ✔ Scanned 127 files in 342ms
+- [Quick start](#quick-start)
+- [What it finds](#what-it-finds)
+- [CLI](#cli)
+- [Configuration](#configuration)
+- [Suppressing findings](#suppressing-findings)
+- [CI / GitHub code scanning](#ci--github-code-scanning)
+- [Programmatic API and custom rules](#programmatic-api-and-custom-rules)
+- [How it works](#how-it-works)
 
-   CRITICAL  FG-XSS-002  Use of eval() or Similar Dynamic Code Execution
-  src/utils/parser.ts:42:5
+## Quick start
 
-    41 | function parseInput(raw) {
-  > 42 |   const result = eval(raw);
-    43 |   return result;
+| Goal                                           | Command                 |
+| ---------------------------------------------- | ----------------------- |
+| Scan the current directory, nothing to install | `npx frontguard`        |
+| Set up a project (install, config, script, CI) | `npm create frontguard` |
+| Same setup, from an existing install           | `npx frontguard init`   |
 
-  Ref: CWE-95 | A03:2021 - Injection
-  Fix: Avoid eval() and new Function(). Use JSON.parse() for data.
+`npm create frontguard` (or `pnpm create`, `yarn create`, `bun create`) runs an interactive setup that:
 
-   HIGH  FG-SEC-002  API Key or Token Exposed
-  src/config/api.ts:8:1
+1. installs `frontguard` as a devDependency with your package manager,
+2. creates `frontguard.config.ts`,
+3. adds a `security` script to `package.json`,
+4. adds a GitHub Actions workflow that uploads results to the **Security** tab,
+5. ignores `frontguard-report/` in `.gitignore`.
 
-   HIGH  FG-AUTH-001  Token Stored in Web Storage
-  src/auth/session.ts:15:3
+Every step asks first and is skipped if it is already done. Use `--yes` to accept the defaults.
 
-  ────────────────────────────────────────────────────────
-    SCAN RESULTS
-  ────────────────────────────────────────────────────────
+Requires Node.js 22.18 or later.
 
-  Files    127
-  Time     342ms
-  Findings 12
+## What it finds
 
-  ● CRITICAL  2  ██
-  ● HIGH      7  ███████
-  ● MEDIUM    3  ███
+| Category     | Examples                                                                                                                                                   |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| XSS          | dynamic `innerHTML`, `eval` / `new Function`, `document.write`, `dangerouslySetInnerHTML`, `v-html`, `{@html}`, `bypassSecurityTrust*`, `javascript:` URLs |
+| Secrets      | 130+ provider token formats (AWS, GitHub, Stripe, OpenAI, Slack…), private keys, JWTs, database URLs, high-entropy strings                                 |
+| Auth         | tokens in `localStorage`/`sessionStorage`, credentials in URLs, hardcoded passwords                                                                        |
+| Misconfig    | public source maps in build configs, `http://`/`ws://` resources, third-party scripts without SRI, `postMessage(…, '*')`                                   |
+| Dependencies | known advisories for the exact versions in your lockfile (npm, pnpm, yarn v1/berry, bun)                                                                   |
 
-  ────────────────────────────────────────────────────────
-```
+See [docs/rules.md](./docs/rules.md) for every rule, with severity, CWE/OWASP mapping and how to fix it.
 
-## Scanners
+FrontGuard is tuned for frontend code: keys that are public by design (Stripe publishable keys,
+Sentry DSNs, Supabase anon keys…) are not reported, static assignments like `el.innerHTML = ''`
+are ignored, and secrets are always masked in every report.
 
-| Scanner | Category | What It Detects | Rules |
-|---------|----------|-----------------|-------|
-| **XSS Scanner** | `xss` | innerHTML, eval, document.write, dangerouslySetInnerHTML, v-html, bypassSecurityTrust, outerHTML, javascript: URLs | 8 |
-| **Secrets Scanner** | `secrets` | AWS keys, API tokens, private keys, JWTs, database URIs, high-entropy strings across 60+ providers | 6 rules, 149+ patterns |
-| **Auth Patterns** | `auth-patterns` | localStorage/sessionStorage token storage, tokens in URL parameters, hardcoded credentials | 3 |
-| **Misconfig Scanner** | `misconfig` | Exposed sourcemaps, mixed HTTP/HTTPS content, CDN resources without SRI | 3 |
-| **Dependency Scanner** | `dependencies` | Known CVEs via OSV.dev, outdated critical dependencies | 2 |
+## CLI
 
-## AI-Powered Analysis
+```text
+frontguard [scan] [dir]   scan a directory (default: .)
+  -c, --config <path>       config file
+  -r, --reporter <list>     console,json,sarif,html (default: console)
+  -o, --output-dir <dir>    where json/sarif/html reports go (default: <dir>/frontguard-report)
+      --fail-on <severity>  critical | high | medium | low | info | none (default: high)
+      --categories <list>   only run xss,secrets,auth,misconfig,dependencies
+      --include-dev         also audit devDependencies
+      --offline             skip the OSV.dev lookup
+  -q, --quiet               only warnings and the summary
+      --open                write the HTML report and open it
 
-FrontGuard integrates with AI providers for deeper analysis beyond static pattern matching.
-
-```bash
-# Deep scan with AI analysis
-frontguard scan ./src --ai-deep
-
-# Generate fix suggestions
-frontguard scan ./src --ai-fix
-
-# Cross-file data flow analysis
-frontguard scan ./src --ai-flow
-
-# Custom rule in natural language
-frontguard scan ./src --ai-rule "Flag any API call that doesn't handle errors"
-
-# Use a specific provider
-frontguard scan ./src --ai-deep --ai-provider anthropic --ai-model claude-sonnet-4-20250514
+frontguard init           interactive project setup (--yes, --json, --no-install, --no-ci, --pm)
+frontguard rules [--json] list rules
+frontguard report [dir]   open a generated HTML report
 ```
 
-Supported providers: **OpenAI**, **Anthropic**, **Google**, and **Ollama** (local).
-
-## Live Vulnerability Feed
-
-FrontGuard maintains a local vulnerability database updated from three sources:
-
-- **OSV.dev** — Open Source Vulnerability database
-- **GitHub Advisory Database** — GitHub's curated security advisories
-- **NVD** — NIST National Vulnerability Database
-
-```bash
-# Update the local vulnerability database
-frontguard update
-
-# Check feed status
-frontguard update --status
-```
-
-The feed uses a local JSON cache (`~/.frontguard/cache.json`) with configurable TTL (default: 24 hours). No native dependencies required.
-
-## Dashboard
-
-Generate an interactive HTML security dashboard:
-
-```bash
-# Quick: generate and auto-open in browser
-frontguard scan ./src -r
-
-# CI: output SARIF for GitHub Code Scanning
-frontguard scan ./src --reporter sarif --output ./reports
-```
-
-The dashboard includes severity breakdowns, filterable findings, code snippets with highlighted lines, remediation guidance, and trend charts when run over time.
+Exit codes: `0` no blocking findings, `1` findings at or above `--fail-on`, `2` usage or config error.
 
 ## Configuration
 
-Create a `frontguard.config.ts` in your project root:
+FrontGuard looks for `frontguard.config.ts`, `.mts`, `.js`, `.mjs` or `.frontguardrc.json` in the
+scanned directory, then in the current directory. Configs are validated; typos and invalid values
+fail with a clear message.
 
-```typescript
+```ts
+// frontguard.config.ts
 import { defineConfig } from 'frontguard';
 
 export default defineConfig({
-  include: ['src/**/*.{ts,tsx,js,jsx,vue,svelte}'],
-  exclude: ['node_modules', 'dist', '**/*.test.*'],
-  scanners: {
-    xss: true,
-    dependencies: true,
-    secrets: true,
-    misconfig: true,
-    authPatterns: true,
-  },
-  rules: {
-    'FG-XSS-002': 'error',
-    'FG-SEC-006': 'warn',
-  },
-  severity: {
-    failOn: 'high',
-  },
+  failOn: 'high',
   reporters: ['console', 'sarif'],
-  output: './frontguard-report',
-  ai: {
-    enabled: false,
-    provider: 'openai',
-    model: 'gpt-4o-mini',
+  exclude: ['src/legacy/**'],
+  categories: { dependencies: true },
+  rules: {
+    'FG-SEC-006': 'warn', // by id...
+    'no-javascript-url': 'off', // ...or by name
   },
+  dependencies: { includeDev: false },
 });
 ```
 
-Also supports `frontguard.config.js`, `frontguard.config.mjs`, and `.frontguardrc.json`.
+| Option             | Default                                                   | Description                                                                              |
+| ------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `include`          | JS/TS, Vue, Svelte, HTML, Astro                           | globs to scan                                                                            |
+| `exclude`          | `[]`                                                      | extra globs to skip, added to the defaults (node_modules, build output, tests, fixtures) |
+| `noDefaultExclude` | `false`                                                   | drop the default excludes                                                                |
+| `maxFileSize`      | `1048576`                                                 | bytes; larger files are skipped                                                          |
+| `categories`       | all `true`                                                | enable/disable `xss`, `secrets`, `auth`, `misconfig`, `dependencies`                     |
+| `rules`            | `{}`                                                      | `off` / `warn` / `error` by rule id or name; `warn` never fails the scan                 |
+| `customRules`      | `[]`                                                      | rules created with `defineRule()`                                                        |
+| `failOn`           | `'high'`                                                  | lowest severity that exits with `1`; `'none'` never fails                                |
+| `reporters`        | `['console']`                                             | `console`, `json`, `sarif`, `html`                                                       |
+| `outputDir`        | `'frontguard-report'`                                     | report directory, relative to the scanned directory                                      |
+| `dependencies`     | `{ includeDev: false, offline: false, timeoutMs: 15000 }` | dependency audit options                                                                 |
 
-## CI/CD Integration
+TypeScript configs are loaded with Node's built-in type stripping, so they can use type annotations
+but not `enum` or `namespace`.
 
-### GitHub Actions
+## Suppressing findings
+
+Comments work in any syntax (`//`, `/* */`, `<!-- -->`, `#`):
+
+```js
+// frontguard-ignore-next-line FG-XSS-001
+el.innerHTML = trustedTemplate;
+
+const hash = 'q8ZtR2vX9mK4pL7wN3sB6yH1'; // frontguard-ignore-line FG-SEC-006
+
+/* frontguard-ignore-file no-eval */
+```
+
+Without a rule list, all rules are suppressed for that scope.
+
+## CI / GitHub code scanning
+
+`frontguard init` writes this workflow for you:
 
 ```yaml
-name: Security Scan
-
+name: FrontGuard
 on: [push, pull_request]
-
+permissions:
+  contents: read
+  security-events: write
 jobs:
-  frontguard:
+  scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
-      - run: npm install -g frontguard
-      - run: frontguard scan ./src --reporter sarif --output ./results
-      - uses: github/codeql-action/upload-sarif@v3
-        if: always()
+          node-version: 22
+      - run: npx --yes frontguard@latest --reporter console,sarif
+      - uses: github/codeql-action/upload-sarif@v4
+        if: ${{ !cancelled() }}
         with:
-          sarif_file: ./results/frontguard.sarif
+          sarif_file: frontguard-report/frontguard-report.sarif
+          category: frontguard
 ```
 
-## CLI Reference
+SARIF results use paths relative to the repository, stable fingerprints and GitHub's
+`security-severity`, so alerts are deduplicated across runs and ranked correctly.
 
-| Command | Description |
-|---------|-------------|
-| `frontguard scan [target]` | Scan a directory for vulnerabilities |
-| `frontguard init` | Generate a config file in the current directory |
-| `frontguard report` | Regenerate reports from the last scan |
-| `frontguard update` | Update the local vulnerability feed |
-| `frontguard auth` | Configure AI provider authentication |
+## Programmatic API and custom rules
 
-### Scan Options
+```ts
+import { defineRule, scan, toSarif } from 'frontguard';
 
-| Flag | Description |
-|------|-------------|
-| `-c, --config <path>` | Path to config file |
-| `-s, --scanners <list>` | Comma-separated scanner list (e.g. `xss,secrets`) |
-| `-r, --report` | Generate HTML report and auto-open in browser |
-| `--reporter <type>` | Reporter for CI: `json`, `html`, `sarif` |
-| `-o, --output <path>` | Output directory for reports |
-| `--fail-on <severity>` | Fail threshold: `critical`, `high`, `medium`, `low` |
-| `--ai-deep` | Enable AI deep scan analysis |
-| `--ai-fix` | Generate AI-powered fix suggestions |
-| `--ai-flow` | Enable AI cross-file data flow analysis |
-| `--ai-rule <rule>` | Custom rule in natural language |
-| `--ai-provider <provider>` | AI provider: `openai`, `anthropic`, `google`, `ollama` |
-| `--ai-model <model>` | AI model to use |
-| `--ai-no-confirm` | Skip confirmation before sending code to AI |
+const noAlert = defineRule({
+  meta: {
+    id: 'ACME-001',
+    name: 'no-alert',
+    title: 'alert() call',
+    description: 'alert() blocks the UI thread.',
+    remediation: 'Use the design-system dialog.',
+    severity: 'low',
+    category: 'misconfig',
+  },
+  // Return Babel visitors; all rules share a single parse and traversal per file.
+  create: (context) => ({
+    CallExpression({ node }) {
+      if (node.callee.type === 'Identifier' && node.callee.name === 'alert' && node.loc) {
+        context.report({ line: node.loc.start.line, column: node.loc.start.column + 1 });
+      }
+    },
+  }),
+});
 
-## Local Development
-
-```bash
-# Clone and install
-git clone https://github.com/frontguard/frontguard.git
-cd frontguard
-npm install
-
-# Build
-npm run build
-
-# Link globally for testing
-npm link
-
-# Scan a project
-frontguard scan /path/to/your/project
-
-# Scan with HTML report
-frontguard scan /path/to/your/project -r
-
-# Run tests
-npm test
+const result = await scan({ cwd: 'apps/web', config: { customRules: [noAlert] } });
+console.log(result.findings.length, toSarif(result));
 ```
+
+Rules can also inspect `context.text` / `context.lines` directly for non-JS patterns.
+
+## How it works
+
+- Files are discovered with fast globbing, read in parallel and parsed once with Babel. Vue,
+  Svelte, Astro and HTML files have their `<script>` blocks extracted in place, so reported lines
+  and columns always point at the original file.
+- Every AST rule contributes visitors to a single merged traversal, ESLint style.
+- Dependency versions come from your lockfile, including transitive packages; dev-only packages are
+  classified by walking the dependency graph. Advisories, severities (GHSA or computed CVSS 3.x)
+  and fixed versions come from OSV.dev.
 
 ## Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting a pull request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+See [CONTRIBUTING.md](./CONTRIBUTING.md). Security issues: see [SECURITY.md](./SECURITY.md).
 
 ## License
 
-[MIT](LICENSE) © 2024–2026 FrontGuard Contributors
+[MIT](./LICENSE)

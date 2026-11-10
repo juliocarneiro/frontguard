@@ -1,0 +1,39 @@
+{
+  "name": "create-frontguard",
+  "version": "0.0.0",
+  "description": "Set up FrontGuard in your project: npm create frontguard",
+  "keywords": [
+    "frontguard",
+    "security",
+    "create",
+    "setup"
+  ],
+  "homepage": "https://github.com/juliocarneiro/frontguard#readme",
+  "bugs": {
+    "url": "https://github.com/juliocarneiro/frontguard/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juliocarneiro/frontguard.git",
+    "directory": "packages/create-frontguard"
+  },
+  "license": "MIT",
+  "author": "Julio Carneiro (https://github.com/juliocarneiro)",
+  "type": "module",
+  "bin": {
+    "create-frontguard": "./index.js"
+  },
+  "files": [
+    "index.js"
+  ],
+  "dependencies": {
+    "frontguard": "workspace:^"
+  },
+  "engines": {
+    "node": "^22.18.0 || >=24.11.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

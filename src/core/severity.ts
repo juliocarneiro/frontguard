@@ -1,32 +1,21 @@
-import type { Severity } from './types.js';
+import type { Severity } from '../types.ts';
 
-const SEVERITY_ORDER: Record<Severity, number> = {
-  critical: 5,
-  high: 4,
-  medium: 3,
-  low: 2,
-  info: 1,
-};
+const RANK: Record<Severity, number> = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
 
-export function severityToNumber(severity: Severity): number {
-  return SEVERITY_ORDER[severity];
+/** Sort comparator: most severe first. */
+export function bySeverity(a: { severity: Severity }, b: { severity: Severity }): number {
+  return RANK[b.severity] - RANK[a.severity];
 }
 
-export function compareSeverity(a: Severity, b: Severity): number {
-  return SEVERITY_ORDER[b] - SEVERITY_ORDER[a];
+export function meetsThreshold(severity: Severity, threshold: Severity | 'none'): boolean {
+  return threshold !== 'none' && RANK[severity] >= RANK[threshold];
 }
 
-export function meetsThreshold(severity: Severity, threshold: Severity): boolean {
-  return SEVERITY_ORDER[severity] >= SEVERITY_ORDER[threshold];
-}
-
-export function severityColor(severity: Severity): string {
-  const colors: Record<Severity, string> = {
-    critical: 'red',
-    high: 'redBright',
-    medium: 'yellow',
-    low: 'blue',
-    info: 'gray',
-  };
-  return colors[severity];
+/** Maps a CVSS base score (0-10) to a severity bucket, following the CVSS v3 qualitative scale. */
+export function severityFromScore(score: number): Severity {
+  if (score >= 9) return 'critical';
+  if (score >= 7) return 'high';
+  if (score >= 4) return 'medium';
+  if (score > 0) return 'low';
+  return 'info';
 }
