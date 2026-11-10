@@ -21,7 +21,7 @@ export interface SecretPattern {
 // prettier-ignore
 export const secretPatterns: SecretPattern[] = [
   // ── AWS (FG-SEC-001) ──────────────────────────────────────────────
-  { id: 'aws-access-key', ruleId: 'FG-SEC-001', name: 'AWS Access Key ID', regex: /(?:^|[^A-Za-z0-9/+=])(?:AKIA[0-9A-Z]{16})(?:$|[^A-Za-z0-9/+=])/, severity: 'critical' },
+  { id: 'aws-access-key', ruleId: 'FG-SEC-001', name: 'AWS Access Key ID', regex: /(?:^|[^A-Za-z0-9/+=])(AKIA[0-9A-Z]{16})(?:$|[^A-Za-z0-9/+=])/, severity: 'critical' },
   { id: 'aws-secret-key', ruleId: 'FG-SEC-001', name: 'AWS Secret Access Key', regex: /(?:aws_secret_access_key|aws_secret|secret_access_key)\s*[:=]\s*['"]?([A-Za-z0-9/+=]{40})['"]?/, severity: 'critical' },
   { id: 'aws-mws-key', ruleId: 'FG-SEC-001', name: 'AWS MWS Key', regex: /amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/, severity: 'critical' },
   { id: 'aws-session-token', ruleId: 'FG-SEC-001', name: 'AWS Session Token', regex: /(?:aws_session_token|session_token)\s*[:=]\s*['"]?([A-Za-z0-9/+=]{100,})['"]?/, severity: 'critical' },

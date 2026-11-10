@@ -35,7 +35,8 @@ export interface ReportDescriptor extends Location {
   /** Overrides the rule's default severity for this finding. */
   severity?: Severity;
   /** A sensitive value that must be masked in snippets and reports. */
-  redact?: string;
+  /** Sensitive value(s) masked in every snippet of the file, e.g. a token or PEM key lines. */
+  redact?: string | readonly string[];
 }
 
 export interface RuleContext {

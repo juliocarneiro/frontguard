@@ -55,6 +55,20 @@ describe('secrets rules', () => {
     }
   });
 
+  it('masks the secret without eating delimiters and points at its first character', () => {
+    const [finding] = analyze(`const k = "${AWS_KEY}";`, 'a.ts');
+    expect(finding).toMatchObject({ column: 12 });
+    expect(finding!.snippet).toMatch(/const k = "AKIA\*+";$/);
+  });
+
+  it('masks the body of PEM private keys', () => {
+    const body = 'MIIBogIBAAJBALRiMLAHudeSA' + 'x3hB2f2NRkJLA0EXAMPLE';
+    const code = `const k = \`${RSA_HEADER}\n${body}\n-----END RSA PRIVATE KEY-----\`;`;
+    const [finding] = analyze(code, 'a.ts');
+    expect(finding?.ruleId).toBe('FG-SEC-003');
+    expect(finding!.snippet).not.toContain(body);
+  });
+
   it('drops the entropy finding when a specific secret rule already fired on the line', () => {
     expect(ruleIds(`const s = "${STRIPE_LIVE}";`, 'a.ts')).toEqual(['FG-SEC-002']);
   });

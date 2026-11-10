@@ -41,7 +41,9 @@ export function analyzeFile(filename: string, text: string, rules: ActiveRule[])
       const key = `${meta.id}:${d.line}:${d.column}`;
       if (seen.has(key)) return;
       seen.add(key);
-      if (d.redact) secrets.add(d.redact);
+      for (const value of typeof d.redact === 'string' ? [d.redact] : (d.redact ?? [])) {
+        if (value) secrets.add(value);
+      }
       findings.push({
         ruleId: meta.id,
         ruleName: meta.name,
