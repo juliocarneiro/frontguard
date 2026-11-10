@@ -18,7 +18,7 @@ import { DEPENDENCY_RULE } from '../dependencies/audit.ts';
 import { toConsole, writeReports } from '../reporters/index.ts';
 import { builtinRules } from '../rules/index.ts';
 import type { ScanResult } from '../types.ts';
-import { VERSION } from '../version.ts';
+import { PACKAGE_NAME, VERSION } from '../version.ts';
 import { runInit, terminalInitIO, type InitIO, type PackageManager } from './init.ts';
 
 export const EXIT = { ok: 0, findings: 1, error: 2 } as const;
@@ -247,7 +247,7 @@ function createProgram(io: CliIO, setExitCode: (code: number) => void): Command 
     .action((dir: string) => {
       const path = resolve(io.cwd, dir, 'frontguard-report.html');
       if (!existsSync(path)) {
-        io.stderr(`No report at ${path}. Run "frontguard scan --reporter html" first.`);
+        io.stderr(`No report at ${path}. Run "npx ${PACKAGE_NAME} --reporter html" first.`);
         setExitCode(EXIT.error);
         return;
       }
