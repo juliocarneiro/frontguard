@@ -16,19 +16,27 @@ Every rule can be configured by id or name in `rules` (`off`, `warn` or `error`)
 | [FG-XSS-007](#fg-xss-007) | `no-html-sink-call` | high | Dynamic HTML passed to a parsing API |
 | [FG-XSS-008](#fg-xss-008) | `no-javascript-url` | medium | javascript: URL |
 | [FG-XSS-009](#fg-xss-009) | `no-svelte-html` | high | Svelte {@html} tag |
+| [FG-XSS-010](#fg-xss-010) | `no-open-redirect` | high | Navigation to a URL taken from the page address |
+| [FG-XSS-011](#fg-xss-011) | `no-dangerous-attribute` | high | Code-executing attribute set from a dynamic value |
+| [FG-XSS-012](#fg-xss-012) | `no-prototype-pollution` | high | Prototype pollution in object merge |
 | [FG-SEC-001](#fg-sec-001) | `no-aws-credentials` | critical | AWS credentials exposed |
 | [FG-SEC-002](#fg-sec-002) | `no-api-tokens` | high | API key or token exposed |
 | [FG-SEC-003](#fg-sec-003) | `no-private-keys` | critical | Private key exposed |
 | [FG-SEC-004](#fg-sec-004) | `no-hardcoded-jwt` | high | Hardcoded JWT |
 | [FG-SEC-005](#fg-sec-005) | `no-connection-strings` | critical | Database connection string exposed |
 | [FG-SEC-006](#fg-sec-006) | `no-high-entropy-strings` | medium | High-entropy string |
+| [FG-SEC-007](#fg-sec-007) | `no-secret-in-public-env` | high | Server secret exposed through a public env variable |
 | [FG-AUTH-001](#fg-auth-001) | `no-token-in-web-storage` | high | Auth token stored in Web Storage |
 | [FG-AUTH-002](#fg-auth-002) | `no-token-in-url` | high | Credential passed in a URL |
 | [FG-AUTH-003](#fg-auth-003) | `no-hardcoded-credentials` | critical | Hardcoded credential |
+| [FG-AUTH-004](#fg-auth-004) | `no-insecure-random` | medium | Math.random() used for a security value |
+| [FG-AUTH-005](#fg-auth-005) | `no-insecure-cookie` | medium | Auth cookie written from JavaScript |
 | [FG-CFG-001](#fg-cfg-001) | `no-public-sourcemaps` | medium | Public source maps in build config |
 | [FG-CFG-002](#fg-cfg-002) | `no-mixed-content` | medium | Insecure http:// or ws:// resource |
 | [FG-CFG-003](#fg-cfg-003) | `require-sri` | low | Third-party resource without Subresource Integrity |
 | [FG-CFG-004](#fg-cfg-004) | `no-wildcard-postmessage` | medium | postMessage with "*" target origin |
+| [FG-CFG-005](#fg-cfg-005) | `require-message-origin-check` | medium | message event handler without an origin check |
+| [FG-CFG-006](#fg-cfg-006) | `no-exposed-dev-server` | medium | Dev server protections disabled |
 | [FG-DEP-001](#fg-dep-001) | `no-vulnerable-dependencies` | high | Vulnerable dependency |
 
 ## XSS
@@ -105,6 +113,30 @@ javascript: URLs run code when followed. They are a common XSS vector in href, s
 
 **How to fix:** Render values with normal {expressions}. If raw HTML is required, sanitize it with DOMPurify first.
 
+### FG-XSS-010
+
+**Navigation to a URL taken from the page address** · `no-open-redirect` · default severity: **high** · CWE-601 · A01:2021 - Broken Access Control
+
+A value read from location.search/hash, URLSearchParams, document.referrer or window.name is used as a navigation target. Attackers craft links that redirect victims to phishing pages, or run code with a javascript: URL (DOM-based XSS).
+
+**How to fix:** Only redirect to relative paths you validate (e.g. must start with "/" and not "//"), or to an allow-list of origins checked with new URL(value, location.origin).origin.
+
+### FG-XSS-011
+
+**Code-executing attribute set from a dynamic value** · `no-dangerous-attribute` · default severity: **high** · CWE-79 · A03:2021 - Injection
+
+Event-handler attributes (onclick, onerror...) are compiled as JavaScript and iframe srcdoc is parsed as a full HTML document, so a dynamic value there executes injected code. URL attributes fed from the page address accept javascript: URLs.
+
+**How to fix:** Attach handlers with addEventListener and a function, render iframe content from a sanitized string (DOMPurify) or a separate URL, and validate URLs against an allow-list of protocols (https:, mailto:).
+
+### FG-XSS-012
+
+**Prototype pollution in object merge** · `no-prototype-pollution` · default severity: **high** · CWE-1321 · A08:2021 - Software and Data Integrity Failures
+
+A merge/extend/set helper copies attacker-controllable keys onto an object without rejecting "__proto__", "constructor" and "prototype". A payload such as {"__proto__": {...}} then adds properties to every object on the page, which turns into DOM XSS through sanitizers and templating (DOMPurify CVE-2026-41238) or code execution on the server (React2Shell, CVE-2025-55182).
+
+**How to fix:** Skip "__proto__", "constructor" and "prototype" keys (or check Object.hasOwn(source, key)), merge into Object.create(null) or a Map, or use structuredClone / a maintained library such as lodash.merge >= 4.6.2.
+
 ## Secrets
 
 ### FG-SEC-001
@@ -155,6 +187,14 @@ A long random-looking string was found. It may be a credential; review it and su
 
 **How to fix:** If the string is a credential, move it out of the code. Otherwise add `// frontguard-ignore-next-line FG-SEC-006` above it.
 
+### FG-SEC-007
+
+**Server secret exposed through a public env variable** · `no-secret-in-public-env` · default severity: **high** · CWE-200 · A01:2021 - Broken Access Control
+
+Variables prefixed with NEXT_PUBLIC_, VITE_, REACT_APP_, NUXT_PUBLIC_, PUBLIC_, EXPO_PUBLIC_... are inlined into the JavaScript sent to the browser. A name like VITE_SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_STRIPE_SECRET means a server secret is readable by every visitor.
+
+**How to fix:** Rename the variable without the public prefix, read it only in server code (API routes, server actions, load functions), and rotate the secret: it is already in your deployed bundles.
+
 ## Auth
 
 ### FG-AUTH-001
@@ -180,6 +220,22 @@ Tokens in query strings end up in browser history, server and proxy logs, and Re
 A password or secret is assigned as a string literal. Everything in frontend code ships to the browser and can be read by anyone.
 
 **How to fix:** Remove the credential. Authenticate through your backend and load server-side secrets from the environment.
+
+### FG-AUTH-004
+
+**Math.random() used for a security value** · `no-insecure-random` · default severity: **medium** · CWE-338 · A02:2021 - Cryptographic Failures
+
+Math.random() is not cryptographically secure: its output can be predicted from a few samples. Tokens, nonces, OAuth state, PKCE verifiers, salts or passwords generated with it can be guessed.
+
+**How to fix:** Use crypto.getRandomValues() or crypto.randomUUID() (available in every browser and in Node), e.g. crypto.getRandomValues(new Uint8Array(32)).
+
+### FG-AUTH-005
+
+**Auth cookie written from JavaScript** · `no-insecure-cookie` · default severity: **medium** · CWE-1004 · A05:2021 - Security Misconfiguration
+
+A session or token cookie is set through document.cookie. Cookies written by JavaScript can never be httpOnly, so any XSS can read them, and without Secure and SameSite they also travel over plain HTTP and cross-site requests.
+
+**How to fix:** Let the server set auth cookies with Set-Cookie: name=value; HttpOnly; Secure; SameSite=Lax (or Strict). If a cookie must be set in JS, add "; Secure; SameSite=Strict" and keep secrets out of it.
 
 ## Misconfiguration
 
@@ -214,6 +270,22 @@ A script or stylesheet is loaded from another origin without an integrity hash. 
 postMessage(data, "*") delivers the message to whatever origin the target window currently has, leaking data to attacker-controlled frames.
 
 **How to fix:** Pass the exact origin you expect, e.g. postMessage(data, "https://app.example.com").
+
+### FG-CFG-005
+
+**message event handler without an origin check** · `require-message-origin-check` · default severity: **medium** · CWE-346 · A01:2021 - Broken Access Control
+
+A window "message" listener reads the event without checking event.origin. Any site that can open or frame your page can post messages to it, so the data must be treated as attacker-controlled (DOM XSS, token theft, CSRF-style actions).
+
+**How to fix:** Return early unless event.origin matches the exact origin you expect (if (event.origin !== "https://app.example.com") return;), and validate the shape of event.data before using it.
+
+### FG-CFG-006
+
+**Dev server protections disabled** · `no-exposed-dev-server` · default severity: **medium** · CWE-942 · A05:2021 - Security Misconfiguration
+
+The dev server accepts any Host header, any CORS origin or serves files outside the project. Any website you visit can then read your source and files such as .env through your local dev server (DNS rebinding and cross-origin reads, as in the Vite file-read CVEs CVE-2025-30208, CVE-2025-31125 and CVE-2025-24010).
+
+**How to fix:** Keep the defaults: list exact hostnames in server.allowedHosts, leave server.fs.strict enabled and cors restricted to known origins. Keep Vite and webpack-dev-server up to date.
 
 ## Dependencies
 

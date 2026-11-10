@@ -3,6 +3,7 @@ import { defineRule, locOf } from '../../core/rule.ts';
 import type { Rule } from '../../types.ts';
 import { identifierWords, objectName, propertyName, stringValue } from '../ast-utils.ts';
 import { looksLikeRealSecret } from '../secrets/heuristics.ts';
+import { noInsecureCookie, noInsecureRandom } from './extra.ts';
 
 const STORAGE = new Set(['localStorage', 'sessionStorage']);
 const TOKEN_WORDS = new Set([
@@ -152,4 +153,10 @@ const noHardcodedCredentials = defineRule({
   },
 });
 
-export const authRules: Rule[] = [noTokenInWebStorage, noTokenInUrl, noHardcodedCredentials];
+export const authRules: Rule[] = [
+  noTokenInWebStorage,
+  noTokenInUrl,
+  noHardcodedCredentials,
+  noInsecureRandom,
+  noInsecureCookie,
+];

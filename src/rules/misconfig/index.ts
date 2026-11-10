@@ -1,6 +1,7 @@
 import { defineRule, locOf, matchLines, positionAt } from '../../core/rule.ts';
 import type { Rule } from '../../types.ts';
 import { propertyName, stringValue } from '../ast-utils.ts';
+import { noExposedDevServer, requireMessageOriginCheck } from './extra.ts';
 
 const BUILD_CONFIG_RE =
   /(?:^|\/)(?:vite|vitest|webpack|rollup|rolldown|rspack|rsbuild|next|nuxt|svelte|astro|tsdown|tsup|vue|quasar|craco)\.config\.[cm]?[jt]s$/;
@@ -148,4 +149,6 @@ export const misconfigRules: Rule[] = [
   noMixedContent,
   requireSri,
   noWildcardPostMessage,
+  requireMessageOriginCheck,
+  noExposedDevServer,
 ];
